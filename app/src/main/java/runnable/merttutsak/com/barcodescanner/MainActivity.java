@@ -37,7 +37,7 @@ public class MainActivity extends Activity {
             public void onClick(View v) {
                 //Barcode Detector
                 BarcodeDetector detector = new BarcodeDetector.Builder(getApplicationContext())
-                        .setBarcodeFormats(Barcode.DATA_MATRIX | Barcode.EAN_13)
+                        .setBarcodeFormats(0)
                         .build();
 
                 if (!detector.isOperational()) {
