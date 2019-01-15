@@ -21,6 +21,7 @@ public class MainActivity extends BaseActivity {
     TextView textView;
     ImageView imageView;
     Button button;
+    Button buttonTakePhoto;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,13 +31,20 @@ public class MainActivity extends BaseActivity {
         textView = (TextView) findViewById(R.id.txtContent);
         imageView = (ImageView) findViewById(R.id.imgview);
         button = (Button) findViewById(R.id.button);
+        buttonTakePhoto = (Button) findViewById(R.id.button_take_photo);
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+             textView.setText(decodeCode());
+            }
+        });
+
+        buttonTakePhoto.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
                 Intent intent = new Intent(MainActivity.this, CameraActivity.class);
                 startActivity(intent);
-                finish();
             }
         });
     }
@@ -44,38 +52,49 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        //Image
         if (bytes != null) {
-            /*
-            final Bitmap bitmap = BitmapFactory.decodeResource(
-                    getApplicationContext().getResources(),
-                    R.drawable.ean13);
-            imageView.setImageBitmap(bitmap);
-            */
             Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
             Bitmap bitmap = bmp.copy(Bitmap.Config.ARGB_8888, true);
-            imageView.setImageBitmap(BitmapModifyOrientation.rotate(bitmap,90));
+            imageView.setImageBitmap(BitmapModifyOrientation.rotate(bitmap, 90));
             imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+        } else {
+            final Bitmap bitmap = BitmapFactory.decodeResource(
+                    getApplicationContext().getResources(),
+                    R.drawable.barcode_01);
 
-            //Barcode Detector
-            BarcodeDetector detector = new BarcodeDetector.Builder(getApplicationContext())
-                    .setBarcodeFormats(0)
-                    .build();
+            imageView.setImageBitmap(bitmap);
+        }
+    }
 
-            if (!detector.isOperational()) {
-                textView.setText("Could not set up the detector!");
-                return;
-            }
+    public String decodeCode() {
+        //Barcode Detector
+        BarcodeDetector detector = new BarcodeDetector.Builder(getApplicationContext())
+                .setBarcodeFormats(0)
+                .build();
 
-            Frame frame = new Frame.Builder().setBitmap(bitmap).build();
-            SparseArray<Barcode> barcodes = detector.detect(frame);
+        Bitmap bitmap = null;
 
-            if (barcodes.size() > 0) {
-                Barcode thisCode = barcodes.valueAt(0);
-                textView.setText(thisCode.rawValue);
-            }else {
-                textView.setText("Couldn't find the barcode");
-            }
+        if (bytes != null) {
+            Bitmap bmp = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+            bitmap = bmp.copy(Bitmap.Config.ARGB_8888, true);
+        } else {
+            bitmap = BitmapFactory.decodeResource(
+                    getApplicationContext().getResources(),
+                    R.drawable.barcode_01);
+        }
+
+        if (!detector.isOperational()) {
+            return "Could not set up the detector!";
+        }
+
+        Frame frame = new Frame.Builder().setBitmap(bitmap).build();
+        SparseArray<Barcode> barcodes = detector.detect(frame);
+
+        if (barcodes.size() > 0) {
+            Barcode thisCode = barcodes.valueAt(0);
+            return thisCode.rawValue;
+        } else {
+            return "Couldn't find the barcode";
         }
     }
 }
