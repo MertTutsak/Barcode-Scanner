@@ -28,18 +28,16 @@ public class MainActivity extends Activity {
         //Image
         final Bitmap bitmap = BitmapFactory.decodeResource(
                 getApplicationContext().getResources(),
-                R.drawable.puppy);
+                R.drawable.ean13);
         imageView.setImageBitmap(bitmap);
 
         //Button
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
                 //Barcode Detector
                 BarcodeDetector detector = new BarcodeDetector.Builder(getApplicationContext())
-                        .setBarcodeFormats(Barcode.DATA_MATRIX | Barcode.QR_CODE)
+                        .setBarcodeFormats(Barcode.DATA_MATRIX | Barcode.EAN_13)
                         .build();
 
                 if (!detector.isOperational()) {
