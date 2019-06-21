@@ -1,4 +1,4 @@
-package runnable.merttutsak.com.barcodescanner;
+package runnable.merttutsak.com.barcodescanner.utils;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;

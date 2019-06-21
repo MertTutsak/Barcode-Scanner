@@ -2,7 +2,6 @@ package runnable.merttutsak.com.barcodescanner;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -25,7 +24,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
 import android.view.Surface;
@@ -47,6 +47,9 @@ public class CameraActivity extends BaseActivity {
 
     //Button
     Button button;
+    Button btnFlash;
+
+    boolean isFlashOpen;
 
     //Camera
     Camera camera;
@@ -98,7 +101,6 @@ public class CameraActivity extends BaseActivity {
 
         @Override
         public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-
         }
 
         @Override
@@ -108,7 +110,6 @@ public class CameraActivity extends BaseActivity {
 
         @Override
         public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-
         }
     };
 
@@ -116,13 +117,28 @@ public class CameraActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
+        isFlashOpen = false;
 
         textureView = (TextureView) findViewById(R.id.textureView);
 
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        textureView.getLayoutParams().width = displayMetrics.widthPixels;
+        textureView.getLayoutParams().height = displayMetrics.heightPixels / 2;
+
         button = (Button) findViewById(R.id.button_take_photo);
+        btnFlash = (Button) findViewById(R.id.button_take_flash);
 
         assert textureView != null;
         textureView.setSurfaceTextureListener(textureListener);
+
+        btnFlash.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                setCamera(isFlashOpen);
+                toggleButton(isFlashOpen);
+            }
+        });
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -149,13 +165,12 @@ public class CameraActivity extends BaseActivity {
                 jpegSizes = cameraCharacteristics.get(cameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP).getOutputSizes(ImageFormat.JPEG);
             }
 
-            int width = 640;
-            int height = 480;
-
             if (jpegSizes != null && jpegSizes.length > 0) {
 
-                width = jpegSizes[0].getWidth();
-                height = jpegSizes[0].getHeight();
+                int width = jpegSizes[0].getWidth();
+                int height = jpegSizes[0].getHeight();
+
+                Log.i("BITMAP_PHOTO", "original : width -" + width + ", height -" + height);
 
                 final ImageReader reader = ImageReader.newInstance(width, height, ImageFormat.JPEG, 1);
 
@@ -174,7 +189,6 @@ public class CameraActivity extends BaseActivity {
                     @Override
                     public void onImageAvailable(ImageReader imageReader) {
                         Image image = null;
-
                         try {
                             image = reader.acquireLatestImage();
                             ByteBuffer buffer = image.getPlanes()[0].getBuffer();
@@ -225,7 +239,7 @@ public class CameraActivity extends BaseActivity {
         try {
             SurfaceTexture textTure = textureView.getSurfaceTexture();
             assert textTure != null;
-            textTure.setDefaultBufferSize(imageDimesion.getWidth(), imageDimesion.getHeight());
+            //textTure.setDefaultBufferSize(imageDimesion.getWidth(), imageDimesion.getHeight());
             Surface surface = new Surface(textTure);
             captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW);
             captureRequestBuilder.addTarget(surface);
@@ -317,6 +331,37 @@ public class CameraActivity extends BaseActivity {
         }
     }
 
+    private void setCamera(boolean enabled) {
+        // your code using Camera2 API here - is api 21 or higher
+        try {
+            CameraActivity.this.getPackageManager().hasSystemFeature(PackageManager.FEATURE_CAMERA_FLASH);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                isFlashOpen = !enabled;
+
+                CameraManager cameraManager = (CameraManager) this.getSystemService(Context.CAMERA_SERVICE);
+                cameraManager.setTorchMode(cameraManager.getCameraIdList()[0], isFlashOpen);
+            } else {
+                android.hardware.Camera cam = android.hardware.Camera.open();
+                android.hardware.Camera.Parameters p = cam.getParameters();
+                if (isFlashOpen) {
+                    p.setFlashMode(android.hardware.Camera.Parameters.FLASH_MODE_TORCH);
+                    cam.setParameters(p);
+                    cam.startPreview();
+                } else {
+                    cam.stopPreview();
+                    cam.release();
+                }
+                if (camera == null) {
+                    return;
+                }
+            }
+        } catch (CameraAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     @Override
     public void onResume() {
         super.onResume();
@@ -328,9 +373,25 @@ public class CameraActivity extends BaseActivity {
         }
     }
 
+    private void toggleButton(boolean enabled) {
+        if (enabled) {
+            button.setText("Close Flash");
+        } else {
+            button.setText("Open Flash");
+        }
+    }
+
     @Override
     public void onPause() {
         stopBackgroundThread();
         super.onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        cameraDevice.close();
+        cameraCaptureSession.close();
     }
 }
