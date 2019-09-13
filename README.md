@@ -62,10 +62,10 @@
 - Dashboard Activity CoordinatorLayout içinde açılacaktır. Bunun nedeni bottomsheet açılacağı içindir.
 - ViewGroup'u ConstraintLayout'tur.
 - Sağ üstte o anki saate göre günün vaktini yazacaktır. Gün 4'e(Sabah,Güniçi,Akşam,Gece) bölünmüştür.
--- Çıkacak mesaj örneği -> Günaydın/İyi Günler/İyi Akşamlar/İyi Geceler
+  - Çıkacak mesaj örneği -> Günaydın/İyi Günler/İyi Akşamlar/İyi Geceler
 - Kullanıcı ismini Session'dan alınacaktır. Session boş ise hiçbir şey yazmayacaktır.
--- Dolu Session -> İyi Akşamlar, Emrah Çetiner
--- Boş Session -> İyi Akşamlar
+  - Dolu Session -> İyi Akşamlar, Emrah Çetiner
+  - Boş Session -> İyi Akşamlar
 - Çıkış butonuna tıklandığında session ve tokenı silip Splash'i başlatacaktır.
 
 ### Otopark
@@ -96,7 +96,7 @@
 - Gerekli bilgiler argumentsden alınarak CardView içinde ki gerekli alanlara yazacaktır.
 - Toplantı konusunun yazılması zorunlu alandır. Açıklaması ise zorunlu bir alan değildir.
 - Toplantı konusu yazıldığı takdirde "Rezervasyon Yap" butonuna enable olacaktır.
-- T"Rezervasyon Yap" butonuna tıklandığında servise SaveMeetingRoom isteği atılacaktır. Başarılı ise çıkan diyalogta tamama ve çarpıya tıkladığında anasayfaya yönlenecektir. Başarısız olduysa tekrardan toplantı oluşturması için search fragmentına ydönecektir.
+- "Rezervasyon Yap" butonuna tıklandığında servise SaveMeetingRoom isteği atılacaktır. Başarılı ise çıkan diyalogta tamama ve çarpıya tıkladığında anasayfaya yönlenecektir. Başarısız olduysa tekrardan toplantı oluşturması için search fragmentına ydönecektir.
 - Diyaloglar bottomsheet olacaktır. ReservationStateBottomSheet sınıfı çağırılacaktır.
 - ReservationStateBottomSheet'i oluştururken çağırılan newInstance parametresine true değeri verince toplantı bilgileri gözükecektir. False değeri verilirse uyarı yazısı gösterilecektir.
 
